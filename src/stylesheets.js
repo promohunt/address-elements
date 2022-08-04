@@ -18,7 +18,7 @@ const resolveInputWidth = config => {
   }
 }
 
-export const createAutocompleteStyles = config => `  
+export const createAutocompleteStyles = config => `
   .lob-dropdown-menu {
     box-sizing: border-box;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.08);
@@ -92,9 +92,6 @@ export const createAutocompleteStyles = config => `
 
 export const createVerifyMessageStyles = config => `
   .lob-verify-message {
-    background-color: ${resolveInlineStyle(config, 'err', 'bgcolor')};
-    border-radius: .25rem;
-    color: ${resolveInlineStyle(config, 'err', 'color')};
     display: none;
     left: 50%;
     margin-bottom: 1.5rem;
@@ -106,5 +103,10 @@ export const createVerifyMessageStyles = config => `
     text-align: center;
     transform: translate(-50%, 0%);
     width: 100%;
+
+    background-color: #fff3cd;
+    border-radius: 2px;
+    border: 1px solid #ffeeba;
+    color: #856404;
   }
 `;
