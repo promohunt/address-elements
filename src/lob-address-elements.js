@@ -387,6 +387,12 @@ export class LobAddressElements {
     };
 
     if (this.config.international) {
+      channel.emit('elements.us_verification.verification', { code: 200, data: {}, form: form[0] });
+      cb(null, true, {});
+      return false;
+    }
+
+    if (this.config.international) {
       const countryVal = country.val().toLowerCase();
       payload.country = country.length === 2 ? countryVal : countryCodes[countryVal];
       payload.postal_code = zip.val();
