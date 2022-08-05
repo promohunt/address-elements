@@ -416,6 +416,13 @@ export class LobAddressElements {
     const av = this;
     xhr.onreadystatechange = function () {
       if (this.readyState === XMLHttpRequest.DONE) {
+        // SKIP: if no response, or response is not 200
+        if (!xhr.responseText || xhr.status != 200) {
+          channel.emit('elements.us_verification.verification', { code: 200, data: {}, form: form[0] });
+          cb(null, true, {});
+          return false;
+        }
+
         let data = av.parseJSON(xhr.responseText);
         let type;
 
@@ -429,18 +436,10 @@ export class LobAddressElements {
             channel.emit('elements.us_verification.verification', { code: 200, data, form: form[0] });
             cb(null, true, data);
           }
-          // PARTIAL SUCCESS: Address verifired as deliverable but needs improvement. Let's ask the
-          // user to confirm our suggested changes.
+          // SKIP: Address is deliverable but needs improvement
           else if (data.deliverability === 'deliverable') {
-            const messageHtml = av.createDidYouMeanMessage(data);
-            message.click(() => {
-              // Mock format from API response
-              av.fixAndSave(data);
-              av.hideMessages();
-              message.off('click');
-              channel.emit('elements.us_verification.improvement', { data: data, form: form[0] });
-            });
-            cb({ msg: messageHtml, type: 'confirm' });
+            channel.emit('elements.us_verification.verification', { code: 200, type: 'verification', data, form: form[0] });
+            cb(null, true);
           }
           // KNOWN VERIFICATION ERROR (e.g., undeliverable): Show error message
           else {
@@ -456,17 +455,15 @@ export class LobAddressElements {
           channel.emit('elements.us_verification.error', { code: 401, type: 'authorization', data, form: form[0] });
           cb(null, true);
         }
-        // KNOWN SYSTEM ERROR (e.g., rate limit exceeded, primary line missing): Grab our pretty
-        // error message to display to user.
+        // SKIP: on any other error
         else {
-          data = data && data.body || data;
-          type = av.resolveErrorType(data.error.message);
-          channel.emit('elements.us_verification.error', { code: data.error.code || 0, type, data, form: form[0] });
-          cb({ msg: messages[type], type: type });
+          channel.emit('elements.us_verification.verification', { code: 200, type: 'verification', data, form: form[0] });
+          cb(null, true);
         }
       }
     };
 
+    xhr.timeout = 4000;
     xhr.send(JSON.stringify(payload));
     return false;
   }
