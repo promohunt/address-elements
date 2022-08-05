@@ -333,9 +333,8 @@ export class LobAddressElements {
    */
   isVerified(data, status) {
     const { confirmed, strictness } = this.config;
-    const addressNeedsImprovement = this.fixAndSave(data, false /* fix */);
     return !status ||
-      (data.deliverability === 'deliverable' && !addressNeedsImprovement) ||
+      (data.deliverability === 'deliverable') ||
       (data.deliverability === 'undeliverable' && confirmed && strictness === 'passthrough') ||
       (data.deliverability === 'deliverable_missing_unit' && confirmed && strictness !== 'strict') ||
       (data.deliverability === 'deliverable_unnecessary_unit' && confirmed && strictness !== 'strict') ||
