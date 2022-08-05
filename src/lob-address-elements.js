@@ -202,17 +202,6 @@ export class LobAddressElements {
     }
   }
 
-  plus4(components) {
-    const parts = [];
-    if (components.zip_code) {
-      parts.push(components.zip_code);
-    }
-    if (components.zip_code_plus_4) {
-      parts.push(components.zip_code_plus_4);
-    }
-    return parts.length ? parts.join('-') : '';
-  }
-
   /**
    * Lob uses the official USPS structure for parsed addresses, but
    * it is common for most Websites in the US to not adhere to this
@@ -244,49 +233,6 @@ export class LobAddressElements {
         primary_line: data.primary_line
       }
     }
-  }
-
-  formatAddressFromResponseData(data) {
-    const { components } = data;
-    const parts = this.denormalizeParts(data, !!this.config.elements.secondary.val());
-
-    return {
-      primary: parts.primary_line,
-      secondary: parts.secondary_line,
-      city: components && components.city || '',
-      state: components && components.state || '',
-      zip: this.config.international ? components.postal_code : this.plus4(components)
-    };
-  }
-
-  /**
-   * Called after Lob verifies an address. Improves/updates and caches. Optionally we can
-   * disable fixing to only check if the address needs improvement.
-   * @param {object} data - verified address object returned from Lob
-   */
-  fixAndSave(data, fix = true) {
-    const { elements, international } = this.config;
-
-    let needsImprovement = false;
-    const address = this.config.address = this.formatAddressFromResponseData(data);
-
-    for (let p in address) {
-      if (address.hasOwnProperty(p)) {
-        const formInput = elements[p].val();
-        const dataDoesNotMatchFormInput = address[p].toUpperCase() !== formInput.toUpperCase();
-        // Standard 5-digit zip input is good enough. We don't care if it doesn't match response data's zip with +4
-        const zipMismatch = !(p === 'zip' && formInput.length === 5 && address[p].indexOf(formInput) === 0);
-
-        if (dataDoesNotMatchFormInput && (!international && zipMismatch)) {
-          needsImprovement = true;
-        }
-
-        if (fix) {
-          elements[p].val(address[p]);
-        }
-      }
-    }
-    return needsImprovement;
   }
 
   resolveErrorType(message) {
@@ -346,17 +292,6 @@ export class LobAddressElements {
       template = template.replace("{" + k + "}", args[k])
     }
     return template;
-  }
-
-  createDidYouMeanMessage(data) {
-    const { primary, secondary, city, state, zip } = this.formatAddressFromResponseData(data);
-    const info = this.config.messages.confirm; // Did you mean
-    const modifiedAddress = `${primary} ${secondary} ${city} ${state} ${zip}`;
-    return `
-      <span style=\"cursor: pointer\">
-        ${info} <span style=\"text-decoration: underline\">${modifiedAddress}</span>?
-      </span>
-    `;
   }
 
   /**
