@@ -524,6 +524,8 @@ export class LobAddressElements {
       return;
     }
 
+    $(window).scrollTop(0)
+
     // Verification result is bad so present a message to the user
     this.showMessage(err);
 
